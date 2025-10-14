@@ -4,16 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gosek"
-version = "0.4.0"
+version = "0.4.1"
 authors = [{ name = "kankburhan" }]
 description = "Fast concurrent secret hunter (regex loaded from external templates repo)"
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["secrets", "regex", "security", "cli"]
-license = { text = "MIT" }
+license = "MIT"
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
   "Environment :: Console",
   "Topic :: Security",
 ]
@@ -29,3 +28,7 @@ toml = ["tomli>=2.0.1; python_version < '3.11'", "tomllib; python_version >= '3.
 
 [project.scripts]
 gosek = "gosek.cli:main"
+
+# Explicitly package only the 'gosek' package (prevents multiple top-level packages error)
+[tool.setuptools]
+packages = ["gosek"]

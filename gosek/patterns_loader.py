@@ -13,7 +13,7 @@ try:
     import tomllib  # Python 3.11+
 except Exception:
     try:
-        import tomli as tomllib  # fallback
+        import tomli as tomllib  # fallback for <3.11
     except Exception:
         tomllib = None
 
@@ -55,7 +55,7 @@ def _load_one_file(path: Path) -> List[Tuple[str, str, re.Pattern]]:
 
 
 def load_patterns_from_dir(templates_dir: Path) -> List[Tuple[str, str, re.Pattern]]:
-    """Load all patterns from a directory (recursively) across JSON/YAML/TOML files."""
+    """Load all patterns recursively from a templates directory."""
     if not templates_dir.exists():
         raise FileNotFoundError(f"Templates dir not found: {templates_dir}")
     patterns: List[Tuple[str, str, re.Pattern]] = []

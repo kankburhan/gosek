@@ -26,6 +26,7 @@ def fetch_url(
     retries: int = 3,
     backoff: float = 0.5,
 ) -> str:
+    """Fetch URL with retry + exponential backoff."""
     proxies = {"http": proxy, "https": proxy} if proxy else None
     for attempt in range(1, retries + 1):
         try:

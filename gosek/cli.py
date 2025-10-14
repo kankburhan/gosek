@@ -8,7 +8,6 @@ from typing import List
 from .patterns_loader import load_patterns_from_dir
 from .scanner import scan_many, to_jsonl, summary
 
-
 DEFAULT_TEMPLATES = Path(os.environ.get("GOSEK_TEMPLATES", Path.home() / ".gosek" / "templates")).resolve()
 
 
@@ -63,32 +62,32 @@ def main() -> None:
 
     # --- Scan ---
     scan = sub.add_parser("scan", help="Scan URL(s)/file(s)/pipeline for secrets")
-    scan.add_argument("--url", "-u", help="Single URL or path to file berisi daftar URL")
-    scan.add_argument("--file", "-f", help="Path file lokal untuk dipindai")
+    scan.add_argument("--url", "-u", help="Single URL or path to file with list of URLs")
+    scan.add_argument("--file", "-f", help="Path to local file to scan")
     scan.add_argument("--templates", "-t", default=str(DEFAULT_TEMPLATES),
-                      help="Folder berisi templates (json/yaml/toml). Default: ~/.gosek/templates")
+                      help="Templates folder (json/yaml/toml). Default: ~/.gosek/templates")
     scan.add_argument("--format", choices=["jsonl", "summary"], default="jsonl")
-    scan.add_argument("--context", type=int, default=80, help="Karakter konteks di sekitar temuan")
-    scan.add_argument("--concurrent", type=int, default=20, help="Jumlah worker konkuren")
-    scan.add_argument("--proxy", help="Proxy http/https, contoh: http://127.0.0.1:8080")
-    scan.add_argument("--timeout", type=int, default=20, help="Timeout per URL (detik)")
-    scan.add_argument("--retries", type=int, default=3, help="Percobaan ulang fetch URL")
-    scan.add_argument("--backoff", type=float, default=0.5, help="Faktor backoff (detik)")
+    scan.add_argument("--context", type=int, default=80, help="Context chars around each finding")
+    scan.add_argument("--concurrent", type=int, default=20, help="Number of concurrent workers")
+    scan.add_argument("--proxy", help="HTTP/HTTPS proxy, e.g. http://127.0.0.1:8080")
+    scan.add_argument("--timeout", type=int, default=20, help="Per-URL timeout (seconds)")
+    scan.add_argument("--retries", type=int, default=3, help="Retries for fetching URLs")
+    scan.add_argument("--backoff", type=float, default=0.5, help="Backoff factor (seconds)")
 
-    # --- Templates ---
-    tpl = sub.add_parser("templates", help="Kelola templates (install/update/list)")
+    # --- Templates mgmt ---
+    tpl = sub.add_parser("templates", help="Manage templates (install/update/list)")
     tpl_sub = tpl.add_subparsers(dest="tpl_cmd", required=True)
 
-    tpl_install = tpl_sub.add_parser("install", help="Install templates dari git/zip")
-    tpl_install.add_argument("--from", dest="src", required=True, help="Sumber repo/zip templates")
+    tpl_install = tpl_sub.add_parser("install", help="Install templates from git/zip")
+    tpl_install.add_argument("--from", dest="src", required=True, help="Templates repo or zip URL")
     tpl_install.add_argument("--to", dest="dst", default=str(DEFAULT_TEMPLATES),
-                             help="Folder tujuan (default: ~/.gosek/templates)")
+                             help="Destination folder (default: ~/.gosek/templates)")
 
-    tpl_update = tpl_sub.add_parser("update", help="Update templates (git pull atau re-download)")
+    tpl_update = tpl_sub.add_parser("update", help="Update templates (git pull / re-download)")
     tpl_update.add_argument("--to", dest="dst", default=str(DEFAULT_TEMPLATES),
-                            help="Folder templates")
+                            help="Templates folder")
 
-    tpl_list = tpl_sub.add_parser("list", help="List file template yang terbaca")
+    tpl_list = tpl_sub.add_parser("list", help="List readable template files")
     tpl_list.add_argument("--templates", "-t", default=str(DEFAULT_TEMPLATES))
 
     args = parser.parse_args()
@@ -96,8 +95,10 @@ def main() -> None:
     if args.cmd == "scan":
         tdir = Path(args.templates)
         if not tdir.exists():
-            raise SystemExit(f"Templates folder not found: {tdir}\n"
-                             f"→ Jalankan: gosek templates install --from <repo_or_zip_url> --to {tdir}")
+            raise SystemExit(
+                f"Templates dir not found: {tdir}\n"
+                f"→ Run: gosek templates install --from <repo_or_zip_url> --to {tdir}"
+            )
         patterns = load_patterns_from_dir(tdir)
         targets = _gather_targets(args.url, args.file)
         if not targets:
@@ -125,8 +126,7 @@ def main() -> None:
             dst = Path(args.dst)
             dst.mkdir(parents=True, exist_ok=True)
             if args.src.endswith(".zip"):
-                # download and unzip
-                import shutil, tempfile, zipfile, requests
+                import tempfile, zipfile, requests
                 with tempfile.TemporaryDirectory() as td:
                     zpath = Path(td) / "templates.zip"
                     r = requests.get(args.src, timeout=60)
@@ -150,12 +150,16 @@ def main() -> None:
                 subprocess.run(["git", "-C", str(dst), "pull", "--ff-only"], check=True)
                 print(f"Templates updated at: {dst}")
             else:
-                print(f"Folder {dst} bukan repo git; gunakan `gosek templates install`.")
+                print(f"{dst} is not a git repo; use `gosek templates install` instead.")
 
         elif args.tpl_cmd == "list":
             tdir = Path(args.templates)
             if not tdir.exists():
                 raise SystemExit(f"Templates folder not found: {tdir}")
-            files = [str(p.relative_to(tdir)) for p in tdir.rglob("*") if p.suffix.lower() in {".json", ".yaml", ".yml", ".toml"}]
+            files = [
+                str(p.relative_to(tdir))
+                for p in tdir.rglob("*")
+                if p.suffix.lower() in {".json", ".yaml", ".yml", ".toml"} and p.is_file()
+            ]
             for f in sorted(files):
                 print(f)

@@ -1,17 +1,29 @@
 name: CI
 on:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-python@v5
-              with:
-                python-version: "3.12"
-            - run: pip install .[yaml,toml] pytest
-            - run: pytest -q
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install -U pip
+          pip install .[yaml,toml] pytest
+
+      - name: Unit tests
+        run: pytest -q
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build

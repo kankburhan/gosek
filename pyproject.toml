@@ -24,7 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 yaml = ["PyYAML>=6.0.1"]
-toml = ["tomli>=2.0.1; python_version < '3.11'", "tomllib; python_version >= '3.11'"]
+toml = ["tomli>=2.0.1; python_version < '3.11'"]
 
 [project.scripts]
 gosek = "gosek.cli:main"

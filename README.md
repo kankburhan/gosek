@@ -36,7 +36,7 @@ pip install -e .[yaml,toml]
 
 # install templates repository (separate)
 gosek templates install \
-  --from https://github.com/your-org/gosek-templates.git \
+  --from https://github.com/kankburhan/gosek-templates.git \
   --to   ~/.gosek/templates
 ```
 

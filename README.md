@@ -42,6 +42,26 @@ gosek templates install \
 
 > Default templates path: `~/.gosek/templates`
 > You can override it using `--templates` or `GOSEK_TEMPLATES` environment variable.
+ 
+ ## 🚀 Easy install
+
+ If you just want to try gosek quickly, here are two simple options:
+
+ - Quick install from PyPI (if available):
+
+ ```bash
+ pip install gosek
+ ```
+
+ - Developer / editable install (recommended when modifying or contributing):
+
+ ```bash
+ pip install -e .[yaml,toml]
+ ```
+
+ Notes:
+ - The `[yaml,toml]` extras install optional parsers (PyYAML / tomli) used for template files.
+ - If the PyPI package isn't available, use the editable install above.
 
 ---
 
@@ -68,6 +88,40 @@ gosek scan --url ./urls.txt --proxy http://127.0.0.1:8080 --retries 4 --backoff 
 ```
 
 ---
+
+## ✨ Quick start — easy to use
+
+Copy-paste the shortest commands to get results fast (zsh-compatible):
+
+- Scan a single remote URL and print JSONL results:
+
+```bash
+gosek scan -u https://example.com/app.js -t ~/.gosek/templates -f jsonl
+```
+
+- Scan a local file (single file scan):
+
+```bash
+gosek scan -f ./bundle.js
+```
+
+- Stream targets via stdin (pipeline):
+
+```bash
+cat urls.txt | gosek scan -t ~/.gosek/templates
+```
+
+- Install templates (from a git repo):
+
+```bash
+gosek templates install --from https://github.com/kankburhan/gosek-templates.git --to ~/.gosek/templates
+```
+
+Tips:
+- Use `--concurrent N` to speed up many URL scans (increase N cautiously).
+- Use `--format summary` for a compact CSV-like pattern counts view.
+- If you see no templates found, confirm `~/.gosek/templates` exists or pass `--templates`.
+
 
 ## 📚 Template Management
 
@@ -109,4 +163,8 @@ Each pattern object supports optional fields like `flags` (e.g. `IGNORECASE`, `M
 ## 🔐 Responsible Use
 
 **gosek** should be used only on assets you own or have permission to test.
-While it’s powerful, regex-based detection may result in **false positives** or expose sensitive infor
+While it’s powerful, regex-based detection may result in **false positives** or expose sensitive information; always verify findings manually and ensure you have explicit permission before scanning targets. Respect legal and ethical boundaries when using this tool.
+
+---
+
+If you'd like, I can further shorten the README to a one-page quickstart or add example `requirements.txt`/`pyproject.toml` snippets for easier installs in virtualenvs.
